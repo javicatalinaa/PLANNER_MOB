@@ -336,6 +336,29 @@ tbody td{padding:9px 12px;vertical-align:middle}
   background:rgba(255,255,255,.3);
   margin:0 12px;
 }
+
+/* ── TOGGLE VISTA ── */
+.btn-view{
+  background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);
+  color:#fff;width:34px;height:34px;border-radius:8px;
+  font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:background .15s;flex-shrink:0;
+}
+.btn-view:hover{background:rgba(255,255,255,.3)}
+/* Vista móvil forzada en escritorio */
+body.mobile-view .tc-scroll{max-width:420px;margin:0 auto}
+body.mobile-view main{max-width:480px;margin:0 auto}
+body.mobile-view .hide-mobile{display:none!important}
+body.mobile-view .kpi-row{grid-template-columns:1fr 1fr}
+body.mobile-view input[type=search]{width:140px}
+body.mobile-view .drawer{width:100%;max-width:480px;right:auto;left:50%;transform:translateX(-50%) translateY(0)}
+body.mobile-view .drawer.on{transform:translateX(-50%) translateY(0)}
+/* Vista escritorio forzada en móvil */
+body.desktop-view .hide-mobile{display:table-cell!important}
+body.desktop-view main{max-width:1600px}
+body.desktop-view .kpi-row{grid-template-columns:repeat(4,1fr)}
+body.desktop-view input[type=search]{width:210px}
+body.desktop-view .tc-scroll{overflow-x:auto}
 </style>
 </head>
 <body>
@@ -380,7 +403,8 @@ tbody td{padding:9px 12px;vertical-align:middle}
     </div>
   </div>
   <div class="header-right">
-    <span class="dtag" id="dtag">📅 17 ago 2026</span>
+    <span class="dtag" id="dtag">📅 18 Aug 2026</span>
+    <button class="btn-view" id="btn-view" onclick="toggleView()" title="Cambiar vista">🖥️</button>
     <button class="btn-up" onclick="openModal()"><span class="pulse"></span>Actualizar stock</button>
     <div class="user-pill">
       <div class="user-av">JO</div>
@@ -541,29 +565,27 @@ const CD_BBDD=[
   {sap:'600135',desc:'GUANTE HILO 7 H',             prov:'TRECK',     fe:200,cm:'4600000148',pos:250,cap:2000,ss:2000,palets:1, upalet:2000,leadtime:'24 hrs',       wf:1.5},
 ];
 const STOCK_BASE={
-  "4010|400002":17500,"4010|400003":29000,"4010|400012":380,"4010|400013":8,
-  "4010|400027":1800,"4010|400032":43000,"4010|400046":300,"4010|400051":10,
-  "4010|400117":106000,"4010|400284":24080,"4010|400645":112500,
-  "4010|600006":40000,"4010|600007":30000,"4010|600008":57500,"4010|600009":55000,
-  "4010|600010":52500,"4010|600012":85000,"4010|600016":84,"4010|600019":108,
-  "4010|600024":0,"4010|600025":4,"4010|600028":47500,"4010|600029":52500,
-  "4010|600056":134,"4010|600070":10000,"4010|600071":30000,"4010|600093":22500,
-  "4010|600094":25000,"4010|600095":50000,"4010|600110":0,"4010|600111":52500,
-  "4010|600118":102500,"4010|600119":115000,"4010|600120":42500,"4010|600122":77500,
-  "4010|600140":30,"4010|600148":35000,"4010|600169":0,"4010|600217":143,
-  "4010|600256":270,"4010|600310":112500,
-  "4020|300056":240,"4020|300061":540,"4020|300080":2700,"4020|300142":520,
-  "4020|300202":425,"4020|300293":225,"4020|300425":500,"4020|400012":134,
-  "4020|400284":130,"4020|600001":44,"4020|600002":72,"4020|600003":15000,
-  "4020|600004":33,"4020|600005":45,"4020|600014":5000,"4020|600016":166,
-  "4020|600019":156,"4020|600022":6900,"4020|600026":92,"4020|600027":206,
-  "4020|600036":70,"4020|600037":10,"4020|600041":380,"4020|600048":9800,
-  "4020|600049":7900,"4020|600053":62,"4020|600056":20,"4020|600066":12,
-  "4020|600085":132,"4020|600097":17,"4020|600133":14,"4020|600135":600,
-  "4020|600138":11,"4020|600140":33,"4020|600143":12,"4020|600148":15800,
-  "4020|600155":6,"4020|600161":20,"4020|600169":180,
-  "4120|600085":2640,"4120|600019":2880,"4120|600016":544,
-  "4120|400046":17900,"4120|600135":2000,
+  "4010|ZPT":77590.8,
+  "4120|ZPT":1639400,
+  "4020|ZPT":6688,
+  "4010|ZSEM":18076,
+  "4020|ZSEM":28177.28,
+  "4010|ZMPR":513697.95,
+  "4020|ZMPR":4000.08,
+  "4120|ZMPR":740588.12,
+  "4120|ZEMP":4977955.4,
+  "4010|ZEMP":12672272.28,
+  "4020|ZEMP":262522.55,
+  "4120|ZIME":11027927.3,
+  "4010|ZIME":3514,
+  "4010|ZINS":2346664.05,
+  "4020|ZINS":60242.7,
+  "4120|ZINS":117529,
+  "4010|ZVES":6280,
+  "4120|ZVES":11899,
+  "4020|ZVES":1,
+  "4020|ZREP":19880.8,
+  "4010|ZREP":23446.9
 };
 
 // ── LÓGICA ──────────────────────────────────────────────────────────────────
@@ -889,6 +911,22 @@ function exportXLSX(){
   const ws=XLSX.utils.json_to_sheet(rows);
   const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Plan');
   XLSX.writeFile(wb,`MOB_PLANNER_${new Date().toISOString().slice(0,10)}.xlsx`);
+}
+
+
+// ── TOGGLE VISTA ─────────────────────────────────────────────────────────────
+const VIEWS = ['auto','mobile-view','desktop-view'];
+const ICONS = ['📱⇄🖥️','📱','🖥️'];
+const LABELS = ['Auto','Móvil','Escritorio'];
+let viewIdx = 0;
+function toggleView(){
+  // Quitar clase anterior
+  document.body.classList.remove('mobile-view','desktop-view');
+  viewIdx = (viewIdx + 1) % 3;
+  if(viewIdx > 0) document.body.classList.add(VIEWS[viewIdx]);
+  const btn = document.getElementById('btn-view');
+  btn.textContent = ICONS[viewIdx];
+  btn.title = `Vista: ${LABELS[viewIdx]}`;
 }
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
